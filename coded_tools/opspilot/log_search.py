@@ -15,6 +15,7 @@
 # END COPYRIGHT
 
 import logging
+import time
 import traceback
 from pathlib import Path
 from typing import Any
@@ -35,8 +36,9 @@ class LogSearch(CodedTool):
         """
         Constructs a log search tool.
         """
-        self.log_file = Path(__file__).parents[2] / "opspilot_data" / "logs" / "sasgrid_metadata.log"
-        logger.debug("... OpsPilot log search initialized for %s ...", self.log_file)
+        repository_root = Path(__file__).resolve().parents[2]
+        self.logs_directory = repository_root / "opspilot_data" / "logs"
+        logger.debug("... OpsPilot log search initialized for %s ...", self.logs_directory)
 
     def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
         """
@@ -50,23 +52,50 @@ class LogSearch(CodedTool):
 
         :return: Matching log entries, or an error message.
         """
+        start_time = time.perf_counter()
         try:
             query = args.get("query") or args.get("search_term")
             logger.debug("Current working directory: %s", Path.cwd())
             logger.debug("Query value received: %r", query)
             if not isinstance(query, str) or not query.strip():
-                return "Error: No search query provided."
+                elapsed_seconds = time.perf_counter() - start_time
+                return f"Error: No search query provided. elapsed_seconds={elapsed_seconds:.6f}"
 
-            logger.debug("Log file path being searched: %s", self.log_file)
+            log_files = sorted(
+                path for path in self.logs_directory.iterdir() if path.is_file() and path.suffix == ".log"
+            )
+            files_searched = [path.name for path in log_files]
+            logger.debug("Log files being searched: %s", files_searched)
             query_lower = query.casefold()
-            with self.log_file.open("r", encoding="utf-8") as stream:
-                matches = [line.rstrip() for line in stream if query_lower in line.casefold()]
+            matches = []
+            for log_file in log_files:
+                with log_file.open("r", encoding="utf-8", errors="replace") as stream:
+                    for line_number, line in enumerate(stream, start=1):
+                        if query_lower in line.casefold():
+                            matches.append(f"{log_file.name}:{line_number}: {line.rstrip()}")
+                            if len(matches) == 25:
+                                break
+                if len(matches) == 25:
+                    break
 
+            elapsed_seconds = time.perf_counter() - start_time
             if not matches:
-                return f"No log entries found for '{query}'."
-            return "\n".join(matches)
+                return (
+                    f"query={query!r}\n"
+                    f"resolved_logs_directory={self.logs_directory}\n"
+                    f"files_searched={files_searched}\n"
+                    f"No matching log entries found\n"
+                    f"elapsed_seconds={elapsed_seconds:.6f}"
+                )
+            return f"elapsed_seconds={elapsed_seconds:.6f}\n" + "\n".join(matches)
         except Exception as error:
-            return f"ERROR: {str(error)}\n\n{traceback.format_exc()}"
+            elapsed_seconds = time.perf_counter() - start_time
+            return (
+                f"ERROR: {type(error).__name__}: {str(error)}\n"
+                f"resolved_path={self.logs_directory}\n"
+                f"elapsed_seconds={elapsed_seconds:.6f}\n\n"
+                f"{traceback.format_exc()}"
+            )
 
     async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
         """
