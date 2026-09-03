@@ -91,10 +91,11 @@ class LogSearch(CodedTool):
         except Exception as error:
             elapsed_seconds = time.perf_counter() - start_time
             return (
-                f"ERROR: {type(error).__name__}: {str(error)}\n"
+                f"ERROR TYPE: {type(error).__name__}\n"
+                f"ERROR: {str(error)}\n"
                 f"resolved_path={self.logs_directory}\n"
                 f"elapsed_seconds={elapsed_seconds:.6f}\n\n"
-                f"{traceback.format_exc()}"
+                f"TRACEBACK:\n{traceback.format_exc()}"
             )
 
     async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
