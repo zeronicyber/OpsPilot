@@ -57,7 +57,7 @@
 
 "fallbacks": [ 
     
-        { "class": "gemini", "model_name": "gemini-2.5-flash", }, 
+        { "class": "gemini", "model_name": "gemini-3.6-flash", }, 
         { "model_name": "claude-sonnet", }, 
         { "class": "openai", "model_name": "gpt-5.2", } 
         ]
