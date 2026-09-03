@@ -55,28 +55,22 @@
         #   - https://github.com/cognizant-ai-lab/neuro-san/blob/main/neuro_san/internals/run_context/langchain/llms/default_llm_info.hocon
         #   - https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/agent_hocon_reference.md#llm_config
 
-"fallbacks": [ 
-    
-        { "class": "gemini", "model_name": "gemini-2.5-flash", }, 
-        { "model_name": "claude-sonnet", }, 
-        { "class": "openai", "model_name": "gpt-5.2", } 
+        "fallbacks": [
+            {
+                # Try OpenAI first
+                "class": "openai",
+                "model_name": "gpt-5.2",
+            },
+            {
+                # Fall back to Anthropic Claude if OpenAI is unavailable.
+                # Let neuro-san figure out the latest version of the model
+                "model_name": "claude-sonnet",
+            },
+            {
+                # Fall back to Google Gemini if both OpenAI and Anthropic are unavailable.
+                # Let neuro-san figure out the latest version of the model
+                "model_name": "gemini-3-flash",
+            }
         ]
-        #"fallbacks": [
-         #   {
-         #       # Try OpenAI first
-         #       "class": "openai",
-         #       "model_name": "gpt-5.2",
-         #   },
-         #   {
-         #       # Fall back to Anthropic Claude if OpenAI is unavailable.
-         #       # Let neuro-san figure out the latest version of the model
-         #       "model_name": "claude-sonnet",
-         #   },
-         #   {
-         #       # Fall back to Google Gemini if both OpenAI and Anthropic are unavailable.
-         #       # Let neuro-san figure out the latest version of the model
-         #       "model_name": "gemini-2.5-flash",
-         #   }
-        #]
     }
 }
