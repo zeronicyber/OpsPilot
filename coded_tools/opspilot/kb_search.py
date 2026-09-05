@@ -9,7 +9,7 @@ from neuro_san.interfaces.coded_tool import CodedTool
 logger = logging.getLogger(__name__)
 
 
-class KBSearch(CodedTool):
+class KbSearch(CodedTool):
     """CodedTool implementation that searches OpsPilot knowledge-base runbooks."""
 
     def __init__(self):
@@ -44,12 +44,14 @@ class KBSearch(CodedTool):
     def _parse_match(self, kb_file: Path, content: str) -> Dict[str, Any]:
         root_cause = self._section(content, ["Root Cause"])
         resolution = self._section(content, ["Resolution Procedure", "Resolution Steps"])
+        validation = self._section(content, ["Validation Checklist", "Validation Steps"])
         return {
             "file": kb_file.name,
             "path": str(kb_file),
             "title": self._title(content, kb_file.stem),
             "root_cause": root_cause,
             "resolution_steps": resolution,
+            "validation_checklist": validation,
         }
 
     def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
@@ -92,3 +94,6 @@ class KBSearch(CodedTool):
     async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
         """Delegates to synchronous KB search because the file scan is bounded and local."""
         return self.invoke(args, sly_data)
+
+
+KBSearch = KbSearch
