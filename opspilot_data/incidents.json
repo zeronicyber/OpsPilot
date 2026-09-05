@@ -40,5 +40,12 @@
     "priority": "P2",
     "status": "Resolved",
     "service": "SAS Web Applications"
+  },
+  {
+    "incident_id": "INC008381022",
+    "title": "Customer load batch job failure",
+    "priority": "P2",
+    "status": "Resolved",
+    "service": "SAS Batch Processing"
   }
 ]
