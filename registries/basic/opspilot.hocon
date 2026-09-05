@@ -92,7 +92,7 @@ For every incident request:
 - If no incident-ID match exists, search using the error or root-cause terms.
 - Never invent runbook content.
 - Return the KB filename, KB title, documented root cause, resolution steps,
-  validation checklist, estimated recovery time, and escalation guidance.
+validation steps, estimated recovery time, and escalation guidance.
 - Clearly state when no matching KB exists.
 """ ${aaosa_instructions},
             "tools": ["kb_search"]
