@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpsPilot | Executive Summary</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #eaf2f7;
+      --muted: #91a5b4;
+      --bg: #091116;
+      --panel: #101e25;
+      --line: #27404a;
+      --cyan: #65d6e8;
+      --mint: #77e0b5;
+      --amber: #f5c76b;
+      --red: #fa8f83;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; color: var(--ink); background: var(--bg); }
+    body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .3; background-image: linear-gradient(#17313a 1px, transparent 1px), linear-gradient(90deg, #17313a 1px, transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(to bottom, black, transparent 80%); }
+    main { position: relative; max-width: 1240px; margin: 0 auto; padding: 36px 30px 54px; }
+    header { display: flex; justify-content: space-between; gap: 28px; align-items: end; padding-bottom: 34px; border-bottom: 1px solid var(--line); }
+    .eyebrow { color: var(--cyan); font: 700 12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { max-width: 720px; margin: 12px 0 10px; font-size: clamp(36px, 6vw, 72px); line-height: .98; letter-spacing: -.04em; }
+    .lede { max-width: 660px; margin: 0; color: var(--muted); font-size: 17px; line-height: 1.55; }
+    .stamp { min-width: 190px; padding: 15px 17px; border-left: 2px solid var(--mint); color: var(--muted); font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .stamp strong { display: block; color: var(--mint); font-size: 14px; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 26px 0 34px; }
+    .metric { padding: 18px; border: 1px solid var(--line); background: rgba(16, 30, 37, .86); }
+    .metric b { display: block; color: var(--cyan); font-size: 32px; line-height: 1; }
+    .metric span { display: block; margin-top: 9px; color: var(--muted); font-size: 12px; }
+    .layout { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+    section { border-top: 1px solid var(--line); padding-top: 17px; }
+    h2 { margin: 0 0 16px; color: var(--cyan); font-size: 15px; letter-spacing: .02em; }
+    .story { padding: 21px; background: var(--panel); border: 1px solid var(--line); }
+    .story p { margin: 0; color: #c4d2d9; font-size: 15px; line-height: 1.65; }
+    .flow { display: flex; align-items: stretch; gap: 8px; }
+    .node { flex: 1; min-width: 0; padding: 15px 12px; border: 1px solid #37606a; background: #122830; }
+    .node b { display: block; font-size: 14px; }
+    .node span { display: block; margin-top: 6px; color: var(--muted); font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .arrow { display: grid; place-items: center; color: var(--cyan); font-size: 20px; }
+    .table-wrap { margin-top: 16px; overflow-x: auto; border: 1px solid var(--line); }
+    table { width: 100%; min-width: 630px; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #20343c; }
+    th { color: var(--muted); font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
+    td:first-child { color: var(--cyan); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    tr:last-child td { border-bottom: 0; }
+    .status { color: var(--mint); }
+    .status.monitoring { color: var(--amber); }
+    .status.open { color: var(--red); }
+    .proof { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .proof div { padding: 15px; background: #0d1a20; border-left: 2px solid var(--mint); }
+    .proof b { display: block; margin-bottom: 7px; font-size: 13px; }
+    .proof span { color: var(--muted); font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    footer { margin-top: 36px; color: #627985; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @media (max-width: 860px) { header { display: block; } .stamp { margin-top: 22px; } .layout { grid-template-columns: 1fr; } .metrics { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { main { padding: 24px 16px 40px; } .metrics { grid-template-columns: 1fr 1fr; } .flow { display: block; } .flow .node { width: 100%; } .flow .arrow { min-height: 30px; transform: rotate(90deg); } .proof { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <div class="eyebrow">OpsPilot / enterprise incident response</div>
+        <h1>From noisy signals to grounded action.</h1>
+        <p class="lede">An agent network that connects operational logs to the runbooks engineers already trust, so incident reports arrive with evidence, cause, and next steps in one pass.</p>
+      </div>
+      <div class="stamp"><strong>HACKATHON DEMO</strong>local evidence layer<br>synthetic production data<br>grounded response mode</div>
+    </header>
+
+    <section class="metrics" aria-label="Demo metrics">
+      <div class="metric"><b>07</b><span>incident records indexed</span></div>
+      <div class="metric"><b>06</b><span>end-to-end scenarios grounded</span></div>
+      <div class="metric"><b>02</b><span>specialist agents coordinating</span></div>
+      <div class="metric"><b>13</b><span>focused tests passing</span></div>
+    </section>
+
+    <div class="layout">
+      <div>
+        <section class="story">
+          <h2>THE DEMO IN ONE SENTENCE</h2>
+          <p>Ask, “Investigate INC008381005.” IncidentCommander delegates log evidence to LogInvestigator and runbook lookup to KnowledgeAgent, then returns a response that clearly separates what happened from what the runbook recommends.</p>
+        </section>
+        <section style="margin-top: 28px">
+          <h2>THE NETWORK</h2>
+          <div class="flow">
+            <div class="node"><b>User</b><span>incident request</span></div>
+            <div class="arrow">→</div>
+            <div class="node"><b>IncidentCommander</b><span>delegation + synthesis</span></div>
+            <div class="arrow">→</div>
+            <div class="node"><b>Specialists</b><span>logs + runbooks</span></div>
+          </div>
+        </section>
+      </div>
+      <div>
+        <section>
+          <h2>WHY IT EARNS TRUST</h2>
+          <div class="proof">
+            <div><b>Evidence first</b><span>Every investigation starts from a real local source.</span></div>
+            <div><b>KB grounded</b><span>Root cause and remediation come from documented runbooks.</span></div>
+            <div><b>Fast feedback</b><span>Searches complete locally in under one second.</span></div>
+          </div>
+        </section>
+        <section style="margin-top: 28px">
+          <h2>PROOF SIGNAL</h2>
+          <div class="story"><p><strong style="color: var(--mint)">13 passed in 0.13s</strong><br>Incident catalog, log evidence, KB mappings, required fields, and latency are covered without an LLM or external API.</p></div>
+        </section>
+      </div>
+    </div>
+
+    <section style="margin-top: 34px">
+      <h2>INCIDENT COVERAGE</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Incident</th><th>Service</th><th>Scenario</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>INC008381005</td><td>SAS Grid</td><td>Workspace sessions unavailable</td><td class="status open">Open / P1</td></tr>
+            <tr><td>INC008381110</td><td>Python Analytics</td><td>Jupyter kernel not starting</td><td class="status open">Open / P2</td></tr>
+            <tr><td>INC008381111</td><td>Python Analytics</td><td>Batch scoring failure</td><td class="status">Resolved / P2</td></tr>
+            <tr><td>INC008381021</td><td>SAS Grid</td><td>Management Console latency</td><td class="status monitoring">Monitoring / P3</td></tr>
+            <tr><td>INC008380944</td><td>SAS Batch</td><td>Missing input file</td><td class="status">Resolved / P3</td></tr>
+            <tr><td>INC008380901</td><td>SAS Web</td><td>HTTP 503 login failure</td><td class="status">Resolved / P2</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>Sources: incidents.json · logs/*.log · kb/*.md · registries/basic/opspilot.hocon</footer>
+  </main>
+</body>
+</html>

@@ -96,38 +96,37 @@ def test_quality_reviewer_requires_grounded_quality_checks():
         "root cause identified",
         "resolution plan present",
         "validation steps present",
-        "investigation quality score",
         "missing information",
         "ready for execution",
         "execute with caution",
-        "partial evidence",
         "requires further investigation",
         "never invent evidence",
         "never create new root causes",
         "never create new recommendations",
         "never create new actions",
-        "no partial scoring",
         "never use ai confidence",
         "never output a confidence percentage",
-        "maximum score = 100",
-        "can never exceed 100",
-        "clamp the investigation quality score to 100",
-        "award each of the six components at most once",
-        "explain scoring using the rubric",
-        "score breakdown",
+        "no numeric scoring",
+        "no percentages",
+        "no confidence scores",
+        "never output an investigation quality score",
+        "never return \"i'm not relevant.\"",
+        "validation gate",
     )
     for phrase in required_phrases:
         assert phrase in instructions, f"QualityReviewer is missing {phrase!r}"
 
-    for weight in (
-        "incident found: 15 points",
-        "log evidence found: 20 points",
-        "kb match found: 20 points",
-        "root cause identified: 15 points",
-        "resolution plan present: 15 points",
-        "validation steps present: 15 points",
-    ):
-        assert weight in instructions, f"QualityReviewer is missing score weight {weight!r}"
+    forbidden_phrases = (
+        "investigation quality score:",
+        "maximum score = 100",
+        "15 points",
+        "20 points",
+        "xx/100",
+        "score breakdown",
+        "partial evidence",
+    )
+    for phrase in forbidden_phrases:
+        assert phrase not in instructions, f"QualityReviewer still contains {phrase!r}"
 
 
 def test_all_agent_and_tool_references_resolve():

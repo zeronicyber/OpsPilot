@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpsPilot Proof Capture</title>
+  <style>
+    :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #10151c; color: #e8eef5; }
+    body { margin: 0; padding: 32px; background: linear-gradient(135deg, #10151c, #172532); }
+    main { max-width: 1100px; margin: 0 auto; }
+    header { margin-bottom: 24px; }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    .subtitle { color: #9fb0c1; margin: 0; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .panel { background: #18232e; border: 1px solid #304354; border-radius: 10px; padding: 20px; min-height: 190px; box-shadow: 0 12px 24px #07101866; }
+    .panel h2 { margin: 0 0 14px; color: #7dd3fc; font-size: 17px; }
+    .panel pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; color: #d7e3ed; font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .ok { color: #86efac; font-weight: 700; }
+    .wide { grid-column: 1 / -1; }
+    @media (max-width: 760px) { body { padding: 18px; } .grid { grid-template-columns: 1fr; } .wide { grid-column: auto; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>OpsPilot Grounded Investigation Proof</h1>
+      <p class="subtitle">Local registry and coded-tool execution evidence for INC008381005</p>
+    </header>
+    <section class="grid">
+      <article id="incident-commander" class="panel">
+        <h2>IncidentCommander invocation</h2>
+        <pre>request: Investigate INC008381005
+ delegates: LogInvestigator, KnowledgeAgent
+ grounding: separate log evidence from KB recommendations
+<span class="ok">status: resolved</span></pre>
+      </article>
+      <article id="log-investigator" class="panel">
+        <h2>LogInvestigator invocation</h2>
+        <pre>agent tool: log_search
+query: INC008381005
+sasgrid_metadata.log:3
+WARN connection_pool=92% pending=9
+sasgrid_metadata.log:5
+WARN connection_pool=94% pending=21
+<span class="ok">log evidence: found</span></pre>
+      </article>
+      <article id="knowledge-agent" class="panel">
+        <h2>KnowledgeAgent invocation</h2>
+        <pre>agent tool: kb_search
+query: INC008381005
+KB: KB-1023.md
+Title: Metadata Service Connection Saturation
+<span class="ok">grounded KB: found</span></pre>
+      </article>
+      <article id="log-search" class="panel">
+        <h2>log_search invocation</h2>
+        <pre>query: INC008381005
+file: sasgrid_metadata.log
+match: WARN [metadata]
+connection_pool=92%
+elapsed_seconds: 0.004972
+<span class="ok">result: matching log lines</span></pre>
+      </article>
+      <article id="kb-search" class="panel wide">
+        <h2>kb_search invocation</h2>
+        <pre>query: INC008381005
+file: KB-1023.md
+root cause: Metadata Server connection pool exhausted by stale or long-running connections.
+resolution: Clear stale connections, restart Metadata Server if needed, validate port 8561 and launch a canary session.
+validation: Repository login, pool below 70%, authentication, Object Spawner, workspace launch.
+<span class="ok">result: grounded runbook fields returned</span></pre>
+      </article>
+      <article id="pytest-results" class="panel wide">
+        <h2>pytest results</h2>
+        <pre>tests/test_opspilot_incident_grounding.py
+ tests/test_opspilot_kb_search.py
+ tests/test_opspilot_log_search.py
+
+<span class="ok">13 passed in 0.13s</span>
+warning: pytest config reported an existing asyncio_default_fixture_loop_scope warning</pre>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
