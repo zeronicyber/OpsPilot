@@ -1,3 +1,10 @@
+# OpsPilot and local development artifacts
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+*.log
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

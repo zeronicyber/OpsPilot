@@ -13,7 +13,7 @@ EXPECTED_AGENTS = {
     "QualityReviewer",
     "ExecutiveReporter",
 }
-EXPECTED_CODED_TOOLS = {"incident_validator", "log_search", "kb_search", "resolution_plan_builder"}
+EXPECTED_CODED_TOOLS = {"log_search", "kb_search", "resolution_plan_builder"}
 EXPECTED_LLM_CONFIG = {
     "class": "langchain_mistralai.chat_models.ChatMistralAI",
     "model_name": "mistral-small-latest",
@@ -49,7 +49,6 @@ def test_incident_commander_delegates_to_all_specialists():
     entries = entries_by_name()
 
     assert entries["IncidentCommander"]["tools"] == [
-        "incident_validator",
         "LogInvestigator",
         "KnowledgeAgent",
         "ResolutionPlanner",

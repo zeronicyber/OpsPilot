@@ -182,7 +182,7 @@ For a complete grounded response, QualityReviewer should indicate that the evide
 Save as:
 
 ```text
-screenshots/01-inc008381005-investigation.png
+screenshots/02-inc008381005-investigation.png
 ```
 
 ---
@@ -272,7 +272,7 @@ The runbook should include the documented actions:
 Save as:
 
 ```text
-screenshots/02-inc008381110-runbook.png
+screenshots/03-inc008381110-runbook.png
 ```
 
 ---
@@ -361,7 +361,7 @@ KB-1023: Metadata Service Connection Saturation
 Save as:
 
 ```text
-screenshots/03-inc008381005-root-cause.png
+screenshots/11_opspilot-proof.html
 ```
 
 ---
@@ -390,11 +390,7 @@ Investigate INC999999999
 
 ```text
 IncidentCommander
-  -> LogInvestigator
-       -> log_search
-  -> KnowledgeAgent
-       -> kb_search
-  -> QualityReviewer
+     -> incident_validator
 ```
 
 
@@ -404,8 +400,8 @@ IncidentCommander
 The response should state:
 
 ```text
-No matching log evidence found.
-No matching KB found.
+Incident Validation Failed
+No matching incident record found.
 REQUIRES FURTHER INVESTIGATION
 ```
 
@@ -432,7 +428,7 @@ It may recommend verifying the incident ID or gathering additional evidence, but
 Save as:
 
 ```text
-screenshots/04-inc999999999-no-match.png
+screenshots/12_Responsible_AI.png
 ```
 
 ---
@@ -481,7 +477,7 @@ The response should identify relevant SAS knowledge available in the local KB da
 Save as:
 
 ```text
-screenshots/05-sas-knowledge-discovery.png
+screenshots/06-knowledge-agent.png
 ```
 
 ---

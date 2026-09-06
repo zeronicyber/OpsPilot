@@ -2,134 +2,128 @@
 
 ## Overview
 
-OpsPilot is a grounded, multi-agent incident investigation system built with Neuro SAN Studio for enterprise platform support. A user submits an incident ID or an operational question, and specialized agents collaborate to retrieve log evidence, locate the matching knowledge-base runbook, prepare a recovery plan, and validate whether the investigation is sufficiently grounded.
+OpsPilot is a Neuro SAN Studio demonstration of a multi-agent incident investigation workflow. It uses synthetic local incidents, logs, and knowledge articles to collect evidence, correlate a runbook, structure recovery actions, review grounding, and prepare a stakeholder summary.
 
-OpsPilot is designed for hackathon demonstration and local experimentation. The incident catalog, operational logs, and runbooks are synthetic production-style data. They must not be treated as production operational records.
+OpsPilot is not a production incident-management system. It is not connected to production observability or incident-management systems, does not execute remediation, and does not verify real service recovery.
 
-## Elevator Pitch
+## Three-Minute Judge Path
 
-Production support teams often spend valuable time searching logs, locating runbooks, correlating failures, and deciding what to do next. OpsPilot acts as an AI Incident War Room by coordinating specialist agents that:
+1. View the active agent network in [`screenshots/01_agent_introduction.png`](screenshots/01_agent_introduction.png).
+2. Open [`screenshots/11_executive-summary.html`](screenshots/11_executive-summary.html) for the value proposition and incident coverage.
+3. Open [`screenshots/11_opspilot-proof.html`](screenshots/11_opspilot-proof.html) for coded-tool evidence, recovery planning, review, and tests.
+4. Run `Investigate INC008381005` for the SAS Grid investigation.
+5. Run `Retrieve the runbook for INC008381110` for direct KB retrieval.
+6. Run `Investigate INC999999999` to verify fail-closed no-match handling.
+
+The strongest factual sources are the active registry, local fixture data, coded-tool results, and focused tests. Captured model responses are supplementary evidence and must be checked against those sources.
+
+## Solution
+
+Support teams often spend time correlating logs, locating runbooks, deciding what to do next, and explaining incident impact. OpsPilot separates those responsibilities across six agents:
 
 - retrieve incident-specific operational evidence;
-- correlate evidence with documented runbooks;
-- identify a grounded root cause;
-- prepare an actionable recovery plan;
-- validate investigation completeness; and
-- avoid unsupported conclusions when evidence is missing.
+- locate documented knowledge;
+- structure recovery and validation actions;
+- review whether claims are supported; and
+- prepare a concise stakeholder summary.
 
-## Why OpsPilot
-
-A typical assistant can summarize text. OpsPilot demonstrates a richer operational workflow:
-
-```text
-Incident request
-    -> Operational evidence
-    -> Knowledge correlation
-    -> Recovery planning
-    -> Quality validation
-```
-
-The core value is not the number of agents. The value is the separation of responsibilities and the use of local evidence and runbooks to support the final response.
+The local coded tools provide deterministic retrieval and plan construction. Root-cause synthesis, routing, QualityReviewer scoring, ExecutiveReporter output, and final formatting remain model-generated under the active registry instructions.
 
 ## Architecture
+
+The active registry exposes all five specialist agents directly to IncidentCommander. This is the registry wiring; it is not a claim that every specialist always runs.
 
 ```mermaid
 graph TD
     U[User] --> IC[IncidentCommander]
 
     IC --> LI[LogInvestigator]
-    LI --> LS[log_search]
-    LS --> LOGS[(Synthetic operational logs)]
-
     IC --> KA[KnowledgeAgent]
-    KA --> KS[kb_search]
-    KS --> KB[(Markdown runbooks)]
-
     IC --> RP[ResolutionPlanner]
-    LI --> RP
-    KA --> RP
-
     IC --> QR[QualityReviewer]
-    RP --> QR
+    IC --> ER[ExecutiveReporter]
 
-    QR --> OUT[Grounded incident response]
+    LI --> LS[log_search]
+    KA --> KS[kb_search]
+    RP --> RPB[resolution_plan_builder]
+
+    LS --> LOGS[(Synthetic operational logs)]
+    KS --> KB[(Markdown runbooks)]
+    RPB --> PLAN[KB-traceable recovery plan]
+    QR --> REVIEW[Grounding and quality review]
+    ER --> SUMMARY[Executive incident summary]
 ```
 
-### Investigation Flow
+### Intended Investigation Flow
+
+The following is the intended response story for a valid, sufficiently grounded incident. It is not a guaranteed static specialist-to-specialist execution graph. Validation failure must stop the workflow before downstream agents run.
 
 ```mermaid
 sequenceDiagram
     participant User
     participant IC as IncidentCommander
+    participant V as incident_validator
     participant LI as LogInvestigator
-    participant LS as log_search
     participant KA as KnowledgeAgent
-    participant KS as kb_search
     participant RP as ResolutionPlanner
     participant QR as QualityReviewer
+    participant ER as ExecutiveReporter
 
-    User->>IC: Submit incident ID or operational question
-    IC->>LI: Request operational evidence
-    LI->>LS: Search by incident ID or keyword
-    LS-->>LI: Matching log lines
-    LI-->>IC: Grounded evidence
-
-    IC->>KA: Request matching runbook
-    KA->>KS: Search by incident ID or keyword
-    KS-->>KA: KB title, root cause, resolution, validation
-    KA-->>IC: Grounded KB findings
-
-    IC->>RP: Prepare recovery plan from available findings
-    RP-->>IC: Recovery plan for review
-
-    IC->>QR: Validate evidence, KB, plan, and validation steps
-    QR-->>IC: Readiness outcome and missing information
-    IC-->>User: Human-readable incident response
+    User->>IC: Submit incident request
+    IC->>V: Validate incident ID and local evidence
+    V-->>IC: valid true or validation failure
+    IC->>LI: Request log evidence
+    IC->>KA: Request matching KB content
+    LI-->>IC: log_search result
+    KA-->>IC: kb_search result
+    IC->>RP: Structure KB recovery and validation actions
+    RP-->>IC: resolution_plan_builder result
+    IC->>QR: Review supplied artifacts
+    QR-->>IC: Grounding and quality outcome
+    IC->>ER: Prepare stakeholder summary
+    ER-->>IC: Model-generated summary
+    IC-->>User: Evidence-bounded response
 ```
 
-## Agents
+## Agent Network
 
 | Agent | Responsibility |
 |---|---|
-| **IncidentCommander** | Front-man agent that interprets the request, delegates work to relevant specialists, and returns a consolidated user-facing response. |
-| **LogInvestigator** | Uses `log_search` to retrieve incident-specific operational evidence. |
-| **KnowledgeAgent** | Uses `kb_search` to retrieve the matching runbook, documented root cause, resolution steps, and validation checklist. |
-| **ResolutionPlanner** | Organizes grounded KB guidance into a recovery plan. Recovery recommendations should remain traceable to the matched runbook. |
-| **QualityReviewer** | Acts as a validation gate by checking whether the incident, log evidence, KB match, root cause, recovery plan, and validation steps are present. |
+| **IncidentCommander** | Coordinates validation, delegation, and the user-facing response. |
+| **LogInvestigator** | Uses `log_search` and cites only returned log findings. |
+| **KnowledgeAgent** | Uses `kb_search` and cites only returned KB content. |
+| **ResolutionPlanner** | Uses `resolution_plan_builder` to structure supplied KB actions. |
+| **QualityReviewer** | Reviews supplied artifacts and rejects unsupported claims. Its scores are generated by the model according to registry instructions, not by a standalone deterministic Python scorer. |
+| **ExecutiveReporter** | Produces a compact model-generated stakeholder summary from the reviewed result. |
 
-### Quality Review Outcomes
+## Grounding and Local Evidence
 
-The QualityReviewer uses clear, non-numeric outcomes:
-
-- **READY FOR EXECUTION REVIEW**: all required grounded artifacts are present;
-- **EXECUTE WITH CAUTION**: the core incident, logs, and KB are present, but a non-critical grounded artifact is missing; or
-- **REQUIRES FURTHER INVESTIGATION**: logs, KB evidence, required runbook sections, or other critical grounding is missing.
-
-The reviewer does not use subjective confidence percentages.
-
-## Coded Tools
-
-| Tool | Implementation | Responsibility |
+| Tool | Implementation | Deterministic responsibility |
 |---|---|---|
-| `log_search` | `coded_tools.opspilot.log_search.LogSearch` | Searches `.log` files under `opspilot_data/logs/` and returns bounded, source-referenced matches. |
-| `kb_search` | `coded_tools.opspilot.kb_search.KbSearch` | Searches Markdown runbooks under `opspilot_data/kb/` and returns the matching KB fields. |
+| `incident_validator` | `coded_tools.opspilot.incident_validator.IncidentValidator` | Validates an incident ID against the local catalog and exact log occurrences before investigation. |
+| `log_search` | `coded_tools.opspilot.log_search.LogSearch` | Searches local `.log` files and returns bounded, source-referenced matches. |
+| `kb_search` | `coded_tools.opspilot.kb_search.KbSearch` | Searches local Markdown runbooks and returns parsed matching KB fields. |
+| `resolution_plan_builder` | `coded_tools.opspilot.resolution_plan_builder.ResolutionPlanBuilder` | Structures supplied KB resolution and validation content into source-referenced actions; it does not search files. |
 
-Both tools perform local file searches and do not call an external incident, log-management, or knowledge API.
+`log_search` and `kb_search` perform local file searches. They do not call external incident, log-management, or knowledge APIs. `resolution_plan_builder` structures supplied KB content into recovery and validation actions.
+
+Local tools provide source-referenced evidence, but agent synthesis and review output remain model-generated and must be checked against the catalog, logs, KB files, and active registry.
 
 ## Data Sources
 
 - Incident catalog: [`opspilot_data/incidents.json`](opspilot_data/incidents.json)
 - Operational logs: [`opspilot_data/logs/`](opspilot_data/logs/)
 - Support runbooks: [`opspilot_data/kb/`](opspilot_data/kb/)
-- Log search tool: [`coded_tools/opspilot/log_search.py`](coded_tools/opspilot/log_search.py)
-- KB search tool: [`coded_tools/opspilot/kb_search.py`](coded_tools/opspilot/kb_search.py)
-- Agent network: [`registries/basic/opspilot.hocon`](registries/basic/opspilot.hocon)
+- Active network: [`registries/basic/opspilot.hocon`](registries/basic/opspilot.hocon)
 - Demo prompts: [`demo_prompts.md`](demo_prompts.md)
-- Demo script: [`demo_script.md`](demo_script.md)
+- Judge script: [`JUDGE_DEMO_SCRIPT.md`](JUDGE_DEMO_SCRIPT.md)
+- Presenter runbook: [`DEMO_SCRIPT_OpsPilot.md`](DEMO_SCRIPT_OpsPilot.md)
 
-The logs include timestamps, hosts, users, components, warnings, failures, investigation events, and recovery events to support root-cause analysis and timeline reconstruction.
+The data is synthetic. Log matching is local, case-insensitive substring matching rather than semantic retrieval. Log results are bounded, and KB search results require review when multiple or conflicting runbooks match.
 
-## Grounded Incident Coverage
+## Incident Coverage
+
+The local catalog contains seven records. The primary grounded scenarios are:
 
 | Incident | Title | Priority | Status | Service |
 |---|---|---:|---|---|
@@ -140,13 +134,11 @@ The logs include timestamps, hosts, users, components, warnings, failures, inves
 | `INC008380944` | Scheduled SAS batch job failed due to missing input file | P3 | Resolved | SAS Batch Processing |
 | `INC008380901` | SAS Web application login page returns HTTP 503 | P2 | Resolved | SAS Web Applications |
 
-### Additional Catalog Entry
+`INC008381022` is also present as a resolved customer-load batch failure, but it has no dedicated matching KB article or confirmed log timeline in the current repository. Treat it as an incomplete scenario.
 
-`INC008381022` may be present in the local incident catalog as a customer-load batch failure. The attached project documentation states that this entry does not currently have a dedicated KB article and complete log timeline. Treat it as an incomplete scenario unless the local data has since been expanded.
+## Sample Queries
 
-## Final Sample Queries
-
-These queries are configured in the network metadata for guided use in Neuro SAN Studio:
+These five queries are configured in the registry metadata:
 
 ```text
 Investigate INC008381005
@@ -156,220 +148,109 @@ What caused INC008381005?
 Is there any knowledge related to SAS issues?
 ```
 
-### What Each Query Demonstrates
+### Manual Demo Mode
 
-| Query | Demonstration |
-|---|---|
-| `Investigate INC008381005` | Complete SAS Grid incident investigation with logs, KB correlation, planning, and review. |
-| `Retrieve the runbook for INC008381110` | Direct runbook retrieval for the Jupyter kernel incident. |
-| `Investigate INC999999999` | Responsible handling of an unknown incident without inventing evidence. |
-| `What caused INC008381005?` | Focused root-cause analysis supported by logs and KB-1023. |
-| `Is there any knowledge related to SAS issues?` | Knowledge discovery across the available SAS-related runbooks. |
+Enter this exact query manually; it is supported by IncidentCommander instructions but is not one of the five metadata sample-query buttons:
+
+```text
+demo investigate INC008381005
+```
+
+Demo Mode changes presentation only. It must use the same evidence selection, recovery actions, quality rules, and approval outcome as a normal investigation. For `INC999999999`, validation must fail immediately and the response must be `REQUIRES FURTHER INVESTIGATION` without a root cause, KB ID, recovery plan, resolved status, or grounded-evidence claim.
 
 ## Demonstration Scenarios
 
-### Scenario 1: Critical SAS Grid Incident
+### SAS Grid Investigation
 
 ```text
 Investigate INC008381005
 ```
 
-Expected demonstration points:
+Use the local catalog, matching logs, and `KB-1023.md`. The catalog status is **Open / P1**. A generated recovery plan is guidance for review, not proof that remediation occurred.
 
-- metadata connection-pool saturation;
-- authentication and workspace-session impact;
-- matching runbook `KB-1023`;
-- grounded resolution and validation guidance; and
-- a readiness outcome from QualityReviewer.
-
-### Scenario 2: Jupyter Kernel Runbook
+### Jupyter Runbook Retrieval
 
 ```text
 Retrieve the runbook for INC008381110
 ```
 
-Expected demonstration points:
+This demonstrates direct retrieval of `KB-1101.md`, its root cause, resolution steps, and validation checklist.
 
-- runbook `KB-1101`;
-- missing `ipykernel` after an environment update;
-- documented resolution steps; and
-- documented validation checklist.
-
-### Scenario 3: Responsible AI / No-Match Handling
+### No-Match Handling
 
 ```text
 Investigate INC999999999
 ```
 
-Expected demonstration points:
-
-- no matching operational evidence;
-- no matching KB article;
-- no invented root cause or recovery plan; and
-- outcome `REQUIRES FURTHER INVESTIGATION`.
+The validator must return no matching incident record and stop downstream investigation. The user-facing result should identify the validation failure and recommend verifying the ID; it must not invent logs, a KB, a cause, a plan, a status, or confidence.
 
 ## How to Run
 
 From the repository root:
 
 ```bash
-cd /Users/zeroniz/Github/neuro-san-studio
 source venv/bin/activate
 set -a && source .env && set +a
 python -m neuro_san_studio run
 ```
 
-In Neuro SAN Studio:
+Select `basic/opspilot`, then enter one of the sample queries or a supported manual query. The complete agent workflow requires a valid `MISTRAL_API_KEY` and network access. Local coded-tool tests do not call an LLM or external API.
 
-1. Select `basic/opspilot`.
-2. Choose one of the sample queries or enter an incident ID.
-3. Review the agent invocation trace and the final grounded response.
-
-The active OpsPilot network uses the Mistral cloud configuration defined in `registries/basic/opspilot.hocon`. A valid `MISTRAL_API_KEY` and network access are required for the complete agent workflow.
-
-## Local Coded-Tool Smoke Tests
-
-### Log search
-
-```bash
-python - <<'PY'
-import asyncio
-from coded_tools.opspilot.log_search import LogSearch
-
-result = asyncio.run(
-    LogSearch().async_invoke({"query": "INC008381005"}, {})
-)
-print(result)
-PY
-```
-
-### KB search
-
-```bash
-python - <<'PY'
-import asyncio
-from coded_tools.opspilot.kb_search import KbSearch
-
-result = asyncio.run(
-    KbSearch().async_invoke({"query": "INC008381110"}, {})
-)
-print(result)
-PY
-```
-
-## Focused OpsPilot Tests
-
-Run only the OpsPilot tests. Do not use the full repository test suite as the full Neuro SAN Studio suite may require optional dependencies unrelated to OpsPilot.
+## Focused Tests
 
 ```bash
 python -m pytest -q \
+  tests/test_opspilot_incident_validator.py \
   tests/test_opspilot_log_search.py \
   tests/test_opspilot_kb_search.py \
   tests/test_opspilot_incident_grounding.py \
-  tests/test_opspilot_agent_structure.py
+  tests/test_opspilot_agent_structure.py \
+  tests/test_opspilot_resolution_plan_builder.py
 ```
 
-Useful focused commands:
-
-```bash
-python -m pytest -v tests/test_opspilot_incident_grounding.py
-python -m pytest -v tests/test_opspilot_agent_structure.py
-git diff --check
-```
-
-The grounding tests validate the incident catalog, matching log evidence, matching KB content, required KB fields, and sub-second local search behavior. These tests do not call an LLM or external API.
+The focused tests cover validator fail-closed behavior, local retrieval, registry structure, grounded incident fixtures, KB fields, and KB-traceable plan construction.
 
 ## Evidence and Proof Assets
 
-Recommended repository assets:
+Current files under [`screenshots/`](screenshots/):
 
-```text
-screenshots/
-  01-inc008381005-investigation.png
-  02-inc008381110-runbook.png
-  03-inc999999999-no-match.png
-  04-opspilot-agent-trace.png
-  05-opspilot-tests.png
-```
+- [`01_agent_introduction.png`](screenshots/01_agent_introduction.png) - active network overview.
+- [`01_agent_registry.png`](screenshots/01_agent_registry.png) - six-agent registry.
+- [`02-inc008381005-investigation.png`](screenshots/02-inc008381005-investigation.png) - SAS Grid investigation capture.
+- [`02-09-inc008381110_rootcause.png`](screenshots/02-09-inc008381110_rootcause.png) - Jupyter root-cause capture.
+- [`03-inc008381110-runbook.png`](screenshots/03-inc008381110-runbook.png) - Jupyter runbook capture.
+- [`04-resolution-plan-agent.png`](screenshots/04-resolution-plan-agent.png) - recovery-plan agent capture.
+- [`05-quality-score.png`](screenshots/05-quality-score.png) - QualityReviewer score capture; model-generated, not a deterministic scorer.
+- [`06-knowledge-agent.png`](screenshots/06-knowledge-agent.png) - KnowledgeAgent capture.
+- [`07-executive-reporter-agent.png`](screenshots/07-executive-reporter-agent.png) - ExecutiveReporter capture.
+- [`10_Focused%20OpsPilot%20Tests.png`](screenshots/10_Focused%20OpsPilot%20Tests.png) - focused test capture.
+- [`11_executive-summary.html`](screenshots/11_executive-summary.html) - judge-facing summary.
+- [`11_opspilot-proof.html`](screenshots/11_opspilot-proof.html) - local proof page.
 
-Existing HTML proof assets may include:
+The text captures [`screenshots/DEMO_INVESTIGATION_INC008381005.md`](screenshots/DEMO_INVESTIGATION_INC008381005.md) and [`screenshots/Demo%20mode.txt`](screenshots/Demo%20mode.txt) are excluded from authoritative evidence. See [`EVIDENCE_AUDIT.md`](EVIDENCE_AUDIT.md).
 
-- `screenshots/opspilot-proof.html`
-- `screenshots/executive-summary.html`
+## Responsible AI Rules
 
-Capture final screenshots from the frozen submission build so the visuals match the final network behavior.
+- Validate the incident against local source data before invoking downstream agents.
+- Treat local tool output as the evidence boundary.
+- Do not convert missing evidence into a cause, KB, recovery plan, status, or confidence.
+- Keep observed log evidence separate from KB recommendations.
+- Treat generated recovery actions as plans for human review, not executed remediation.
+- For `INC999999999`, return no match and `REQUIRES FURTHER INVESTIGATION`.
 
-## Demo Proof Checklist
+## Hackathon Requirements Alignment
 
-- [ ] `INC008381005` shows matching logs and `KB-1023`.
-- [ ] `INC008381110` retrieves `KB-1101` without exposing internal orchestration JSON.
-- [ ] `INC999999999` returns no match and does not invent a root cause.
-- [ ] Root-cause query clearly separates log evidence and KB evidence.
-- [ ] QualityReviewer uses non-numeric readiness outcomes.
-- [ ] Final screenshots show the five-agent network and two coded tools.
-- [ ] Focused OpsPilot tests pass.
-- [ ] Git working tree is clean and the final submission tag is recorded.
+| Requirement | Implementation | Evidence |
+|---|---|---|
+| Six-agent orchestration | IncidentCommander plus five specialists in the active registry | [`01_agent_introduction.png`](screenshots/01_agent_introduction.png), [`01_agent_registry.png`](screenshots/01_agent_registry.png) |
+| Three coded tools | `log_search`, `kb_search`, `resolution_plan_builder` | [`11_opspilot-proof.html`](screenshots/11_opspilot-proof.html) |
+| Synthetic grounded data | Local incident catalog, logs, and Markdown KBs | [`opspilot_data/`](opspilot_data/) |
+| Responsible no-match handling | Deterministic incident validation gate and fail-closed registry contract | [`tests/test_opspilot_incident_validator.py`](tests/test_opspilot_incident_validator.py) |
+| Focused tests | Validator, retrieval, grounding, registry, and planner tests | [`10_Focused%20OpsPilot%20Tests.png`](screenshots/10_Focused%20OpsPilot%20Tests.png) |
+| Executive reporting | ExecutiveReporter summarizes reviewed investigation output | [`07-executive-reporter-agent.png`](screenshots/07-executive-reporter-agent.png) |
 
-## Responsible AI and Grounding Rules
+## Limitations
 
-OpsPilot is designed to:
+OpsPilot uses synthetic local data, model-dependent routing and synthesis, substring retrieval, and a cloud model for the complete agent workflow. It does not execute production changes, update incident-management systems, send communications, or verify real service recovery.
 
-- distinguish observed log evidence from documented KB guidance;
-- avoid claiming a root cause when local evidence does not support one;
-- return a no-match result for unknown incidents;
-- avoid subjective confidence percentages;
-- present internal agent payloads as user-friendly responses; and
-- treat recovery recommendations as plans for review, not proof that a production action was executed.
-
-## Known Limitations
-
-- The incident, log, and KB data is synthetic.
-- Search is case-insensitive substring matching, not semantic retrieval.
-- `kb_search` may return the first matching KB result; duplicate or conflicting runbooks need manual review.
-- Full agent behavior depends on the selected model following routing and formatting instructions.
-- Cloud-model rate limits can interrupt multi-agent runs.
-- A generated recovery plan must be reviewed before any operational execution.
-- OpsPilot does not execute production changes, update ServiceNow, send communications, or confirm that a service has recovered.
-- Runbook, root-cause, and investigation queries are more reliable than unconstrained requests for implementation commands.
-
-## Future Enhancements
-
-- Add deterministic recovery-plan construction from numbered KB resolution and validation items.
-- Add semantic search and ranking across logs and runbooks.
-- Add structured filters for incident ID, service, severity, timestamp, host, and user.
-- Add duplicate-KB detection and conflict handling.
-- Add first-class provenance fields for every planned action.
-- Add a deterministic local demo mode that does not depend on cloud-model availability.
-- Add integrations for enterprise incident-management and observability platforms.
-- Add automated visual evidence capture for each supported demo scenario.
-
-## Submission Positioning
-
-OpsPilot demonstrates the following hackathon capabilities:
-
-- declarative Neuro SAN multi-agent orchestration;
-- specialist-agent delegation;
-- custom Python coded tools;
-- grounded log and KB retrieval;
-- incident root-cause analysis;
-- recovery planning and quality review;
-- deterministic local validation; and
-- responsible no-match behavior.
-
-The recommended demonstration story is:
-
-```text
-Evidence found
-    -> Knowledge matched
-    -> Root cause explained
-    -> Recovery guidance reviewed
-```
-
-For an unknown incident:
-
-```text
-No evidence
-    -> No KB
-    -> No invented conclusion
-    -> Further investigation required
-```
+See [`EVIDENCE_AUDIT.md`](EVIDENCE_AUDIT.md) for evidence exclusions and remaining risks.

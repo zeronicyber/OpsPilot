@@ -66,23 +66,23 @@
       <div>
         <div class="eyebrow">OpsPilot / enterprise incident response</div>
         <h1>From noisy signals to grounded action.</h1>
-        <p class="lede">An agent network that connects operational logs to the runbooks engineers already trust, so incident reports arrive with evidence, cause, and next steps in one pass.</p>
+        <p class="lede">An agent network that connects operational logs to the runbooks engineers already trust, then validates and reports the result so incident responses arrive with evidence, cause, and next steps in one pass.</p>
       </div>
       <div class="stamp"><strong>HACKATHON DEMO</strong>local evidence layer<br>synthetic production data<br>grounded response mode</div>
     </header>
 
     <section class="metrics" aria-label="Demo metrics">
       <div class="metric"><b>07</b><span>incident records indexed</span></div>
-      <div class="metric"><b>06</b><span>end-to-end scenarios grounded</span></div>
-      <div class="metric"><b>02</b><span>specialist agents coordinating</span></div>
-      <div class="metric"><b>13</b><span>focused tests passing</span></div>
+      <div class="metric"><b>06</b><span>agents in the active workflow</span></div>
+      <div class="metric"><b>03</b><span>grounded coded tools</span></div>
+      <div class="metric"><b>31</b><span>focused tests passing</span></div>
     </section>
 
     <div class="layout">
       <div>
         <section class="story">
           <h2>THE DEMO IN ONE SENTENCE</h2>
-          <p>Ask, “Investigate INC008381005.” IncidentCommander delegates log evidence to LogInvestigator and runbook lookup to KnowledgeAgent, then returns a response that clearly separates what happened from what the runbook recommends.</p>
+          <p>Ask, “Investigate INC008381005.” IncidentCommander gathers log evidence and runbook context, builds a KB-traceable recovery plan, checks the investigation quality, and returns an executive summary that separates what happened from what the runbook recommends.</p>
         </section>
         <section style="margin-top: 28px">
           <h2>THE NETWORK</h2>
@@ -91,7 +91,15 @@
             <div class="arrow">→</div>
             <div class="node"><b>IncidentCommander</b><span>delegation + synthesis</span></div>
             <div class="arrow">→</div>
-            <div class="node"><b>Specialists</b><span>logs + runbooks</span></div>
+            <div class="node"><b>LogInvestigator</b><span>log_search</span></div>
+            <div class="arrow">→</div>
+            <div class="node"><b>KnowledgeAgent</b><span>kb_search</span></div>
+            <div class="arrow">→</div>
+            <div class="node"><b>ResolutionPlanner</b><span>recovery actions</span></div>
+            <div class="arrow">→</div>
+            <div class="node"><b>QualityReviewer</b><span>quality gate</span></div>
+            <div class="arrow">→</div>
+            <div class="node"><b>ExecutiveReporter</b><span>stakeholder summary</span></div>
           </div>
         </section>
       </div>
@@ -101,12 +109,12 @@
           <div class="proof">
             <div><b>Evidence first</b><span>Every investigation starts from a real local source.</span></div>
             <div><b>KB grounded</b><span>Root cause and remediation come from documented runbooks.</span></div>
-            <div><b>Fast feedback</b><span>Searches complete locally in under one second.</span></div>
+            <div><b>Traceable recovery</b><span>Planner actions map back to KB resolution and validation steps.</span></div>
           </div>
         </section>
         <section style="margin-top: 28px">
           <h2>PROOF SIGNAL</h2>
-          <div class="story"><p><strong style="color: var(--mint)">13 passed in 0.13s</strong><br>Incident catalog, log evidence, KB mappings, required fields, and latency are covered without an LLM or external API.</p></div>
+          <div class="story"><p><strong style="color: var(--mint)">31 passed in 3.26s</strong><br>Incident grounding, specialist structure, log and KB retrieval, recovery-plan traceability, required fields, and fallback behavior are covered without an external API.</p></div>
         </section>
       </div>
     </div>
@@ -123,6 +131,7 @@
             <tr><td>INC008381021</td><td>SAS Grid</td><td>Management Console latency</td><td class="status monitoring">Monitoring / P3</td></tr>
             <tr><td>INC008380944</td><td>SAS Batch</td><td>Missing input file</td><td class="status">Resolved / P3</td></tr>
             <tr><td>INC008380901</td><td>SAS Web</td><td>HTTP 503 login failure</td><td class="status">Resolved / P2</td></tr>
+            <tr><td>INC008381022</td><td>SAS Batch</td><td>Customer load batch job failure</td><td class="status">Resolved / P2</td></tr>
           </tbody>
         </table>
       </div>

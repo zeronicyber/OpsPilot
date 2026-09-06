@@ -14,7 +14,9 @@
 #
 # END COPYRIGHT
 
+import html
 import logging
+import re
 import time
 import traceback
 from pathlib import Path
@@ -40,6 +42,12 @@ class LogSearch(CodedTool):
         self.logs_directory = repository_root / "opspilot_data" / "logs"
         logger.debug("... OpsPilot log search initialized for %s ...", self.logs_directory)
 
+    @staticmethod
+    def _clean_query(query: Any) -> str:
+        clean_query = re.sub(r"<[^>]*>", " ", html.unescape(query))
+        incident_match = re.search(r"\bINC\d{9}\b", clean_query, re.IGNORECASE)
+        return incident_match.group(0) if incident_match else clean_query.strip()
+
     def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
         """
         :param args: An argument dictionary whose keys are the parameters
@@ -61,6 +69,7 @@ class LogSearch(CodedTool):
                 elapsed_seconds = time.perf_counter() - start_time
                 return f"Error: No search query provided. elapsed_seconds={elapsed_seconds:.6f}"
 
+            query = self._clean_query(query)
             log_files = sorted(
                 path for path in self.logs_directory.iterdir() if path.is_file() and path.suffix == ".log"
             )

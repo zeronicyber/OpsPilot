@@ -30,9 +30,11 @@
       <article id="incident-commander" class="panel">
         <h2>IncidentCommander invocation</h2>
         <pre>request: Investigate INC008381005
- delegates: LogInvestigator, KnowledgeAgent
- grounding: separate log evidence from KB recommendations
-<span class="ok">status: resolved</span></pre>
+ delegates: LogInvestigator, KnowledgeAgent, ResolutionPlanner,
+            QualityReviewer, ExecutiveReporter
+ grounding: evidence -> recovery plan -> quality review -> summary
+ incident status: Open / P1
+<span class="ok">investigation: complete</span></pre>
       </article>
       <article id="log-investigator" class="panel">
         <h2>LogInvestigator invocation</h2>
@@ -52,6 +54,31 @@ KB: KB-1023.md
 Title: Metadata Service Connection Saturation
 <span class="ok">grounded KB: found</span></pre>
       </article>
+  <article id="resolution-planner" class="panel">
+    <h2>ResolutionPlanner invocation</h2>
+    <pre>agent tool: resolution_plan_builder
+query: INC008381005
+source: KB-1023.md
+status: READY_FOR_REVIEW
+recovery actions: 6
+validation actions: 6
+<span class="ok">result: every action traces to the KB</span></pre>
+  </article>
+  <article id="quality-reviewer" class="panel">
+    <h2>QualityReviewer invocation</h2>
+    <pre>inputs: incident record, log evidence, KB, recovery plan
+checks: evidence grounding, required fields, action traceability
+approval: grounded investigation
+<span class="ok">quality gate: passed</span></pre>
+  </article>
+  <article id="executive-reporter" class="panel">
+    <h2>ExecutiveReporter invocation</h2>
+    <pre>inputs: reviewed investigation result
+output: executive incident summary
+includes: business impact, root cause, mitigation, status,
+      risk level, confidence, grounding sources
+<span class="ok">summary: prepared</span></pre>
+  </article>
       <article id="log-search" class="panel">
         <h2>log_search invocation</h2>
         <pre>query: INC008381005
@@ -75,9 +102,11 @@ validation: Repository login, pool below 70%, authentication, Object Spawner, wo
         <pre>tests/test_opspilot_incident_grounding.py
  tests/test_opspilot_kb_search.py
  tests/test_opspilot_log_search.py
+ tests/test_opspilot_agent_structure.py
+ tests/test_opspilot_resolution_plan_builder.py
 
-<span class="ok">13 passed in 0.13s</span>
-warning: pytest config reported an existing asyncio_default_fixture_loop_scope warning</pre>
+<span class="ok">31 passed in 3.26s</span>
+warning: pytest config reported an existing unknown asyncio_default_fixture_loop_scope option</pre>
       </article>
     </section>
   </main>

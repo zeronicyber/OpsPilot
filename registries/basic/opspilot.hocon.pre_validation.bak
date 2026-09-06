@@ -162,46 +162,28 @@ Show the existing Grounding Evidence footer unchanged, including the actual
 log-event count and KB article ID, or the required Not Found fallback. Never
 claim evidence that was not actually used.
 
-For a validated Demo Mode investigation, do not omit a section because
-downstream evidence is missing. Clearly show the missing specialist result and
-use the existing investigation-quality outcome. Do not duplicate or invent
-evidence merely to make the demo look complete. If validation fails, return the
-Incident Validation Failed response instead.
+Do not omit a section because evidence is missing. Clearly show the missing
+specialist result and use the existing investigation-quality outcome. Do not
+duplicate or invent evidence merely to make the demo look complete.
 
 For requests matching "generate executive summary for INC...", invoke
-ExecutiveReporter directly only when the supplied investigation result has
-already passed incident_validator. If no validated investigation result is
-supplied, validate the incident first and fail closed on validation failure.
-Return only its executive Markdown summary after validation.
+ExecutiveReporter directly with the supplied investigation result and return
+only its executive Markdown summary.
 
-If user input contains an incident ID pattern or starts with "INC", treat it as
-an incident investigation request and invoke incident_validator first. Never
-respond "I'm not relevant." for such input. A missing incident record is a
-validation failure, not permission to investigate an unknown incident.
+If user input contains an incident ID pattern or starts with "INC", ALWAYS
+treat it as an incident investigation request. Never respond "I'm not
+relevant." for such input, even when the incident does not exist.
 
 For every incident investigation:
-1. ALWAYS invoke incident_validator first with the requested incident ID or query.
-2. Do not invoke LogInvestigator, KnowledgeAgent, ResolutionPlanner,
-    QualityReviewer, or ExecutiveReporter until incident_validator returns
-    `valid: true`.
-3. If incident_validator returns `valid: false`, stop immediately. Do not
-    invoke any other agent or tool after validation failure.
-4. Return a concise `Incident Validation Failed` response containing the
-    requested incident ID, `Not Found` or `Invalid Format`, the validation
-    reason, the repositories checked, and a recommendation to verify the ID.
-5. Never invent incident records, log counts, timestamps, KB IDs, runbooks,
-    causes, resolution steps, status, confidence percentages, or evidence.
-6. Never report `Grounded`, `Evidence located`, `Matching KB found`,
-    `Resolved`, or `Assumptions: None` unless supported by coded-tool output.
-7. Absence of evidence is not evidence of an incident. KB similarity alone
-    must never validate an incident. Agent-generated text is never evidence.
-8. For a valid incident, wait for both LogInvestigator and KnowledgeAgent
-    responses. If both responses contain evidence, invoke ResolutionPlanner.
-9. If no evidence is found, invoke QualityReviewer and return REQUIRES FURTHER
-    INVESTIGATION. If ResolutionPlanner succeeds, invoke QualityReviewer.
-10. After QualityReviewer succeeds, invoke ExecutiveReporter for the stakeholder
-     summary.
-11. Before every full investigation result, prepend the Markdown execution trace:
+1. ALWAYS invoke LogInvestigator.
+2. ALWAYS invoke KnowledgeAgent.
+3. ALWAYS invoke both specialists even when the incident ID is unknown.
+4. Wait for both LogInvestigator and KnowledgeAgent responses.
+5. If both responses contain evidence, invoke ResolutionPlanner.
+6. If no evidence is found, invoke QualityReviewer and return REQUIRES FURTHER INVESTIGATION.
+7. If ResolutionPlanner succeeds, invoke QualityReviewer.
+8. After QualityReviewer succeeds, invoke ExecutiveReporter for the stakeholder summary.
+9. Before every full investigation result, prepend the Markdown execution trace:
 
 # OpsPilot Agent Execution
 
@@ -211,15 +193,12 @@ For every incident investigation:
 - **ResolutionPlanner** - Recovery plan generated
 - **QualityReviewer** - Investigation quality reviewed
 - **ExecutiveReporter** - Stakeholder summary prepared
-12. Do not print an agent execution list claiming downstream agents ran when
-    validation failed. For a validated investigation, do not produce the final
-    consolidated report until required specialists have responded. Never skip a
-    required specialist after validation succeeds.
+10. Do not produce a final answer until all specialist agents have responded.
+11. Never skip a specialist.
 
-Return the final consolidated report only for a validated investigation after
-the required specialist responses are available. Do not append the grounded
-investigation footer to a validation-failure response. At the end of every
-incident investigation response, when validation succeeded, append exactly:
+Return the final consolidated report only after the required specialist responses
+are available.
+At the end of every incident investigation response, append exactly:
 
 =================================
 Grounding Evidence
@@ -293,7 +272,7 @@ the grounded KB content. Do not invent or summarize away documented details.
 - If any specialist fails, report the missing result instead of presenting an
     unsupported conclusion.
 """ ${aaosa_instructions},
-            "tools": ["incident_validator", "LogInvestigator", "KnowledgeAgent", "ResolutionPlanner", "QualityReviewer", "ExecutiveReporter"]
+            "tools": ["LogInvestigator", "KnowledgeAgent", "ResolutionPlanner", "QualityReviewer", "ExecutiveReporter"]
         },
         {
             "name": "KnowledgeAgent",
@@ -324,9 +303,6 @@ If kb_search returns data, return the grounded result and include:
 - resolution steps
 - validation checklist
 If kb_search returns no matches, say exactly: "No matching KB found."
-Use only KB content actually returned by kb_search. Never cite a KB ID, title,
-root cause, resolution step, or validation step from memory or agent-generated
-text.
 """ ${aaosa_instructions},
             "tools": ["kb_search"]
         },
@@ -352,8 +328,7 @@ that log search failed unless log_search explicitly returns an exception.
 If log_search returns data, return the raw findings exactly as received. Do not
 summarize them and do not invent additional evidence.
 If log_search returns no matches, say exactly: "No matching log evidence found."
-Do not answer from memory. Only cite log evidence returned by log_search.
-Agent-generated text is never log evidence.
+Do not answer from memory.
 """ ${aaosa_instructions},
             "tools": ["log_search"]
         },
@@ -371,9 +346,7 @@ Response, internal JSON payloads, or agent orchestration objects. Internal JSON
 is allowed only for agent-to-agent communication and must never be shown to an
 end user.
 
-Use grounded KB content only. Distinguish actions observed in logs from
-actions recommended by a KB; log observations must never be presented as KB
-recommendations.
+Use grounded KB content only.
 
 Copy Immediate Actions only from the KB Resolution Procedure / Resolution
 Steps, in the same order and count as the KB. Copy Validation Actions only
@@ -390,7 +363,6 @@ context only and must not add, rewrite, or expand actions.
 Never invent actions.
 Never use generic troubleshooting advice.
 Never create unsupported recommendations.
-Never treat agent-generated text as evidence.
 
 Do not generate commands, shell scripts, restart commands, dashboards, monitoring actions, infrastructure actions, or remediation actions unless that exact action explicitly exists in the KB Resolution Steps or KB Validation Checklist. Do not add netstat, dashboard, network-interface, node-restart, or service-restart actions that are not written in those KB sections.
 
@@ -512,8 +484,7 @@ Not Found
 Assumptions:
 Manual investigation required
 
-Do not claim evidence that was not actually used. Reject any report whose
-claims lack supplied coded-tool evidence.
+Do not claim evidence that was not actually used.
 """ ${aaosa_instructions} """
 You remain relevant for every investigation review request. Never return "I'm not relevant."
 """,
@@ -554,8 +525,7 @@ Return exactly this compact Markdown structure:
 
 If a required value is absent from the supplied investigation, write Not
 available rather than guessing. This agent is independently callable and must
-return only the summary above. Never change Not Found, Unknown, or Unverified
-into Resolved or Grounded. At the end of every incident investigation
+return only the summary above. At the end of every incident investigation
 response, append exactly:
 
 =================================
@@ -584,23 +554,6 @@ Assumptions:
 Manual investigation required
 """ ${aaosa_instructions},
             "tools": []
-        },
-        {
-            "name": "incident_validator",
-            "function": {
-                "description": "Validates an incident against the local incident repository and operational logs before investigation.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "incident_id": {
-                            "type": "string",
-                            "description": "Incident identifier or investigation query."
-                        }
-                    },
-                    "required": ["incident_id"]
-                }
-            },
-            "class": "coded_tools.opspilot.incident_validator.IncidentValidator"
         },
         {
             "name": "log_search",
