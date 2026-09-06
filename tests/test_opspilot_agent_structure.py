@@ -12,7 +12,7 @@ EXPECTED_AGENTS = {
     "ResolutionPlanner",
     "QualityReviewer",
 }
-EXPECTED_CODED_TOOLS = {"log_search", "kb_search"}
+EXPECTED_CODED_TOOLS = {"log_search", "kb_search", "resolution_plan_builder"}
 EXPECTED_LLM_CONFIG = {
     "class": "langchain_mistralai.chat_models.ChatMistralAI",
     "model_name": "mistral-small-latest",
@@ -55,11 +55,66 @@ def test_incident_commander_delegates_to_all_specialists():
     ]
 
 
+def test_incident_commander_renders_runbook_retrieval_as_user_markdown():
+    instructions = entries_by_name()["IncidentCommander"]["instructions"]
+
+    required_phrases = (
+        "Runbook Found",
+        "KB filename",
+        "KB title",
+        "## Root Cause",
+        "## Resolution Steps",
+        "## Validation Checklist",
+        "user-friendly Markdown",
+        "Return only the user-facing Markdown report",
+    )
+    for phrase in required_phrases:
+        assert phrase in instructions, f"IncidentCommander is missing {phrase!r}"
+
+    forbidden_phrases = (
+        "internal orchestration JSON",
+        "tool payloads",
+        "agent payloads",
+        "fields Name, Inquiry, or Mode",
+    )
+    for phrase in forbidden_phrases:
+        assert phrase in instructions, f"IncidentCommander must forbid {phrase!r}"
+
+
+def test_all_agents_normalize_end_user_responses():
+    entries = entries_by_name()
+    agent_names = (
+        "IncidentCommander",
+        "KnowledgeAgent",
+        "LogInvestigator",
+        "ResolutionPlanner",
+        "QualityReviewer",
+    )
+    required_phrases = (
+        "for direct end-user responses",
+        "always render markdown",
+        "headings",
+        "bullet lists",
+        "numbered steps",
+        "never expose name, inquiry, mode",
+        "response",
+        "internal json payloads",
+        "agent orchestration objects",
+        "internal json is allowed only for agent-to-agent communication",
+        "must never be shown to an end user",
+    )
+    for agent_name in agent_names:
+        instructions = " ".join(entries[agent_name]["instructions"].casefold().split())
+        for phrase in required_phrases:
+            assert phrase in instructions, f"{agent_name} is missing {phrase!r}"
+
+
 def test_retrieval_specialists_have_their_coded_tools():
     entries = entries_by_name()
 
     assert entries["LogInvestigator"]["tools"] == ["log_search"]
     assert entries["KnowledgeAgent"]["tools"] == ["kb_search"]
+    assert entries["ResolutionPlanner"]["tools"] == ["resolution_plan_builder"]
 
 
 def test_resolution_planner_requires_grounded_recovery_fields():

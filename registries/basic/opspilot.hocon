@@ -40,6 +40,15 @@ You are part of an OpsPilot incident response network.
         "model_name": "mistral-small-latest",
         "temperature": 0.1
     },
+    "metadata": {
+        "sample_queries": [
+            "Investigate INC008381005",
+            "Retrieve the runbook for INC008381110",
+            "Investigate INC999999999",
+            "What caused INC008381005?",
+            "Is there any knowledge related to SAS issues?"
+        ]
+    },
 
     "tools": [
         # This first agent definition is regarded as the "Front Man", which
@@ -69,6 +78,12 @@ An assistant that answers incident response inquiries from the user.
             "instructions": ${instructions_prefix} """
 You are IncidentCommander.
 
+For direct end-user responses, always render Markdown with headings, bullet
+lists, and numbered steps where appropriate. Never expose Name, Inquiry, Mode,
+Response, internal JSON payloads, or agent orchestration objects. Internal JSON
+is allowed only for agent-to-agent communication and must never be shown to an
+end user.
+
 If user input contains an incident ID pattern or starts with "INC", ALWAYS
 treat it as an incident investigation request. Never respond "I'm not
 relevant." for such input, even when the incident does not exist.
@@ -86,6 +101,25 @@ For every incident investigation:
 
 Return the final consolidated report only after the required specialist responses
 are available.
+When the user requests a runbook or KB retrieval, render the grounded KB content
+as user-friendly Markdown. Use this format:
+
+Runbook Found
+
+<KB filename>: <KB title>
+
+## Root Cause
+<documented root cause>
+
+## Resolution Steps
+<documented resolution steps>
+
+## Validation Checklist
+<documented validation checklist>
+
+Never expose internal orchestration JSON, tool payloads, agent payloads, or the
+fields Name, Inquiry, or Mode. Return only the user-facing Markdown report and
+the grounded KB content. Do not invent or summarize away documented details.
 - Do not invent evidence, root causes, or resolution instructions.
 - Clearly separate log evidence from KB recommendations.
 - If any specialist fails, report the missing result instead of presenting an
@@ -100,6 +134,12 @@ are available.
             },
             "instructions": ${instructions_prefix} """
 You are the OpsPilot operational knowledge specialist.
+
+For direct end-user responses, always render Markdown with headings, bullet
+lists, and numbered steps where appropriate. Never expose Name, Inquiry, Mode,
+Response, internal JSON payloads, or agent orchestration objects. Internal JSON
+is allowed only for agent-to-agent communication and must never be shown to an
+end user.
 
 ALWAYS call kb_search first for every knowledge investigation request.
 When an incident ID is provided, immediately invoke kb_search with the incident
@@ -127,6 +167,12 @@ If kb_search returns no matches, say exactly: "No matching KB found."
             "instructions": ${instructions_prefix} """
 You are the OpsPilot LogInvestigator.
 
+For direct end-user responses, always render Markdown with headings, bullet
+lists, and numbered steps where appropriate. Never expose Name, Inquiry, Mode,
+Response, internal JSON payloads, or agent orchestration objects. Internal JSON
+is allowed only for agent-to-agent communication and must never be shown to an
+end user.
+
 ALWAYS call log_search first for every investigation request.
 When an incident ID is provided, immediately invoke log_search with the incident
 ID as the query.
@@ -146,6 +192,12 @@ Do not answer from memory.
             },
             "instructions": ${instructions_prefix} """
 You are the OpsPilot Resolution Planner.
+
+For direct end-user responses, always render Markdown with headings, bullet
+lists, and numbered steps where appropriate. Never expose Name, Inquiry, Mode,
+Response, internal JSON payloads, or agent orchestration objects. Internal JSON
+is allowed only for agent-to-agent communication and must never be shown to an
+end user.
 
 Use grounded KB content only.
 
@@ -170,9 +222,10 @@ Do not generate commands, shell scripts, restart commands, dashboards, monitorin
 Return "INSUFFICIENT EVIDENCE" and do not generate a recovery action only when
 there is no KB, no Resolution Steps, or no Validation Checklist.
 
-Return exactly this structure. Repeat Action / Source pairs for every KB
-Resolution Step, then every KB Validation Checklist item. Do not add extra
-actions.
+Call resolution_plan_builder with the incident ID, KB filename, KB title, KB
+Resolution Steps, and KB Validation Checklist. Return its structured result
+without adding, rewriting, or expanding any recovery or validation action.
+Do not generate a plan directly.
 
 Recommended Resolution Plan
 ---------------------------
@@ -204,7 +257,7 @@ and supporting log evidence is available. Medium when the KB is complete but
 log evidence is absent or partial. Low only when required grounding is
 missing.
 """ ${aaosa_instructions},
-        "tools": []
+            "tools": ["resolution_plan_builder"]
         },
         {
             "name": "QualityReviewer",
@@ -213,6 +266,12 @@ missing.
             },
             "instructions": ${instructions_prefix} """
 You are the OpsPilot Quality Reviewer. You are a validation gate.
+
+For direct end-user responses, always render Markdown with headings, bullet
+lists, and numbered steps where appropriate. Never expose Name, Inquiry, Mode,
+Response, internal JSON payloads, or agent orchestration objects. Internal JSON
+is allowed only for agent-to-agent communication and must never be shown to an
+end user.
 
 Always review the supplied investigation. Never return "I'm not relevant."
 
@@ -341,6 +400,45 @@ Searches OpsPilot knowledge-base runbooks by incident ID or keyword.
                 }
             },
             "class": "coded_tools.opspilot.kb_search.KbSearch"
+        },
+        {
+            "name": "resolution_plan_builder",
+            "function": {
+                "description": "Builds a recovery plan exclusively from KB Resolution Steps and Validation Checklist items."
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "incident_id": {
+                            "type": "string",
+                            "description": "Incident identifier."
+                        },
+                        "kb_file": {
+                            "type": "string",
+                            "description": "Matched KB filename."
+                        },
+                        "kb_title": {
+                            "type": "string",
+                            "description": "Matched KB title."
+                        },
+                        "resolution_steps": {
+                            "type": "string",
+                            "description": "Verbatim KB Resolution Steps content."
+                        },
+                        "validation_checklist": {
+                            "type": "string",
+                            "description": "Verbatim KB Validation Checklist content."
+                        }
+                    },
+                    "required": [
+                        "incident_id",
+                        "kb_file",
+                        "kb_title",
+                        "resolution_steps",
+                        "validation_checklist"
+                    ]
+                }
+            },
+            "class": "coded_tools.opspilot.resolution_plan_builder.ResolutionPlanBuilder"
         }
     ]
 }
