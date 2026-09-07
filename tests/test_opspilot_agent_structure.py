@@ -138,13 +138,17 @@ def test_executive_reporter_has_grounded_compact_summary_contract():
         "affected users",
         "root cause",
         "mitigation",
-        "current status",
+        "status",
         "risk level",
         "confidence",
         "grounding sources",
         "maximum of 10 content lines",
         "not available rather than guessing",
         "independently callable",
+        "status must be copied verbatim from the incident record",
+        "never state that a service was restored, an incident was resolved, or a fix",
+        "recommended mitigation",
+        "recovery actions are recommendations awaiting human execution",
     ):
         assert phrase in instructions, phrase
 

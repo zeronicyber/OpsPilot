@@ -9,3 +9,5 @@ Investigate INC008381021
 Investigate INC008380944
 
 Investigate INC008380901
+
+show registered opspilots in

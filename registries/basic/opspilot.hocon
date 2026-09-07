@@ -546,11 +546,16 @@ Return exactly this compact Markdown structure:
 **Business Impact:** <grounded business impact or Not available>
 **Affected Users:** <grounded count or Not available>
 **Root Cause:** <grounded root cause or Not available>
-**Mitigation:** <grounded resolution action or Not available>
-**Current Status:** Resolved | Monitoring | Active
+**Recommended Mitigation:** <grounded recovery action or Not available>
+**Status:** <status copied verbatim from the incident record>
 **Risk Level:** Low | Medium | High
 **Confidence:** <grounded percentage>
 **Grounding Sources:** Incident Record; Log Evidence; Knowledge Base Article
+
+Status must be copied verbatim from the incident record.
+Never state that a service was restored, an incident was resolved, or a fix
+was applied. Recovery actions are recommendations awaiting human execution.
+Use "Recommended Mitigation", not "Resolution".
 
 If a required value is absent from the supplied investigation, write Not
 available rather than guessing. This agent is independently callable and must

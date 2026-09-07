@@ -85,6 +85,23 @@ sequenceDiagram
     IC-->>User: Evidence-bounded response
 ```
 
+## Technologies Used
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Agent framework | Neuro SAN Studio with `neuro-san` 0.6.95 | Multi-agent orchestration and registry execution |
+| Model integration | LangChain MistralAI, `mistral-small-latest`, temperature `0.1` | Model-generated synthesis and response formatting |
+| Runtime | Python 3.12.0 | Executes the OpsPilot workflow and coded tools |
+| Coded tools | Python modules: `incident_validator.py`, `log_search.py`, `kb_search.py`, `resolution_plan_builder.py` | Validate incidents, retrieve local evidence, and structure recovery plans |
+| Data | JSON, `.log`, and Markdown files | Incident catalog, operational logs, and knowledge-base runbooks |
+| Testing | `pytest` | Focused tests for tools, grounding, registry structure, and plan construction |
+
+**Design notes**
+
+- Coded tools are deterministic and local.
+- The language model handles synthesis and formatting only.
+- All OpsPilot data is synthetic.
+
 ## Agent Network
 
 | Agent | Responsibility |
